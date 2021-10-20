@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'djoser',
     'api'
 ]
 
@@ -81,6 +83,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=150)
 }
 
