@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'djoser',
     'drf_yasg',
-    'api'
+    'api',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -84,8 +85,9 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('JWT',),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=150)
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=150),
+    'BLACKLIST_AFTER_ROTATION': False
 }
 
 DJOSER = {
@@ -119,6 +121,8 @@ DATABASES = {
     }
 }
 
+#from django.conf import settings.AUTH_USER_MODEL
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
