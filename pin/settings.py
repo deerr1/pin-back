@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-@*+r3n@y%gc86#vlxx&v!7v*62#93gb$xg=ce1w(6ti33g*1n=
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_ALLOW_ALL=True
 
 
 # Application definition
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'corsheaders',
     'djoser',
     'drf_yasg',
     'api',
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -116,8 +119,12 @@ WSGI_APPLICATION = 'pin.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pin',
+        'USER': 'postgres',
+        'PASSWORD': '0102030405f',
+        'HOST': 'localhost',
+        "PORT": '5432'
     }
 }
 
