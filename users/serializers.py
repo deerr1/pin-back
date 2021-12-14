@@ -7,3 +7,9 @@ class UserForPin(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
         fields = ['id', 'username','avatar']
+
+class UserForProfile(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.CustomUser
+        fields = ['id', 'username', 'email', 'avatar']

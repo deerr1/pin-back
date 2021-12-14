@@ -44,13 +44,14 @@ class PinCategory(models.Model):
     def __str__(self):
         return f"{self.name_category}"
 
+
 class Pin(models.Model):
     name = models.CharField(verbose_name='Название пина',max_length=50)
     description = models.TextField(verbose_name='Описание',null=True, blank=True)
-    image = models.FileField(verbose_name='Изображение',upload_to='media/pins')
+    image = models.FileField(verbose_name='Изображение', upload_to="images", editable=True)
     upload_date = models.DateTimeField(verbose_name='Дата загрузки пина')
     category = models.ManyToManyField(to=PinCategory, verbose_name='Категория')
-    board = models.ManyToManyField(to=Board)
+    board = models.ManyToManyField(to=Board, through='BoardPin')
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
 
     class Meta:
@@ -59,3 +60,14 @@ class Pin(models.Model):
 
     def __str__(self):
         return f"{self.name} {self.category}"
+
+class BoardPin(models.Model):
+    pin = models.ForeignKey(to=Pin, verbose_name='Картинка', on_delete=models.CASCADE)
+    board = models.ForeignKey(to=Board,verbose_name='Доска', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Связь пинов с доской'
+        verbose_name_plural = 'Связь пинов с доской'
+
+    def __str__(self):
+        return f"{self.pin.name} {self.board.name}"

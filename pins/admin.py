@@ -6,4 +6,5 @@ admin.site.register(AccessToBoard)
 admin.site.register(UserRightBoard)
 admin.site.register(PinCategory)
 admin.site.register(Pin)
+admin.site.register(BoardPin)
 
