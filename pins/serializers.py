@@ -27,6 +27,11 @@ class PinsSerializer(serializers.ModelSerializer):
         model = models.Pin
         fields = ['id','name','image']
 
+class PinCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Pin
+        fields = ['id', 'name', 'description', 'image', 'upload_date', 'user']
+        depth = 1
 class PinsDetailSerializer(serializers.ModelSerializer):
     user = user_ser.UserForPin()
     class Meta:
