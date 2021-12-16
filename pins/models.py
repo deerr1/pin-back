@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from random import randint
 
 
 class AccessToBoard(models.Model):
@@ -24,6 +25,15 @@ class Board(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    def random_pin(self):
+        ret = None
+        queryset = Pin.objects.all().filter(board=self.id)
+        count = queryset.values_list('id')
+        if(len(count)-1>0):
+            queryset = queryset.filter(id = count[randint(0, len(count) - 1)][0]).first()
+            ret = queryset.image
+        return ret
 
 class UserRightBoard(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
@@ -50,7 +60,7 @@ class Pin(models.Model):
     description = models.TextField(verbose_name='Описание',null=True, blank=True)
     image = models.FileField(verbose_name='Изображение', upload_to="images", editable=True)
     upload_date = models.DateTimeField(verbose_name='Дата загрузки пина')
-    category = models.ManyToManyField(to=PinCategory, verbose_name='Категория')
+    category = models.ManyToManyField(to=PinCategory, verbose_name='Категория', null=True, blank=True)
     board = models.ManyToManyField(to=Board, through='BoardPin')
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
 

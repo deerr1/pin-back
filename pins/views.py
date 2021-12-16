@@ -3,22 +3,45 @@ from rest_framework import generics
 from django.conf import settings
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
+from random import randint
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 import pins.serializers as serializers
 import pins.models as models
+import datetime
 
 
-class ListAddPinToBoard(generics.ListCreateAPIView):
-    queryset = models.BoardPin.objects.all()
+class AddPinToBoard(generics.CreateAPIView):
+    serializer_class = serializers.AddPinToBoardSerializer
+    # permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return serializers.GetPinsOnBoardSerializer
-        elif self.request.method == 'POST':
-            return serializers.AddPinToBoardSerializer
+class ListPinsOnBoard(generics.ListAPIView):
+    serializer_class = serializers.GetPinsOnBoardSerializer
+    # permission_classes = [IsAuthenticated]
 
-    # def post(self):
+    def get_queryset(self):
+        queryset = models.UserRightBoard.objects.filter(board=self.kwargs.get('id'))
+        if len(queryset) == 0:
+            raise NotFound()
+        queryset = models.BoardPin.objects.filter(board=self.kwargs.get('id'))
+        return queryset
 
+class CreatePin(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        pin = data['pin']
+        pin['upload_date'] = datetime.datetime.now()
+        pin['user'] = request.user
+        serializer = serializers.PinsDetailSerializer(data=pin)
+        if serializer.is_valid(raise_exception=True):
+            board = models.Board.objects.get(id=data['board'])
+            pin = models.Pin.objects.create(name=pin['name'], image=pin['image'], description=pin['description'], upload_date=pin['upload_date'], user=pin['user'])
+            pinBoard = models.BoardPin.objects.create(pin = pin, board = board)
+            pinBoard.save()
+        return Response(status=400)
 
 class ListPins(generics.ListAPIView):
     serializer_class = serializers.PinsSerializer
@@ -32,15 +55,52 @@ class ListPins(generics.ListAPIView):
 
         return queryset
 
-class UserBoardDetail(generics.ListAPIView):
+class CreateUpdateDeleteUserBoard(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        serializer = serializers.BoadCreateSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            access = models.AccessToBoard.objects.get(id=data.get('access'))
+            board = models.Board.objects.create(name=data.get('name'), access=access)
+            rightsBoard = models.UserRightBoard.objects.create(user=request.user, board = board)
+            rightsBoard.save()
+            return Response(status=201)
+        return Response(status=400)
+
+    def put(self):
+        pass
+    
+    def delete(self):
+        pass
+
+
+
+class ListUserBoards(generics.ListAPIView):
     serializer_class = serializers.UserBoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            queryset = models.UserRightBoard.objects.filter(user = self.request.user.id)
-            if (len(queryset) == 0):
+        queryset = models.UserRightBoard.objects.filter(user = self.request.user.id)
+        if (len(queryset) == 0):
+            raise NotFound()
+        return queryset
+
+class UserBoardDetail(generics.ListAPIView):
+    serializer_class = serializers.BoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = models.Board.objects.filter(id = self.kwargs.get('id'))
+        permission = queryset.filter(access__name = 1)
+        if len(permission) > 0:
+            permission = models.UserRightBoard.objects.filter(board = self.kwargs.get('id'), user=self.request.user.id)
+            if len(permission) > 0:
+                return queryset
+            else:
                 raise NotFound()
+        else:
             return queryset
 
 class PinDetail(generics.ListAPIView):

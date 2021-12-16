@@ -3,15 +3,20 @@ from rest_framework import serializers
 import pins.models as models
 import users.serializers as user_ser
 
-
-class BoardSerialuzer(serializers.ModelSerializer):
+class BoadCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Board
-        fields = ['id', 'name', 'access']
+        fields = ['name', 'access']
+
+class BoardSerializer(serializers.ModelSerializer):
+    img = serializers.FileField(source='random_pin')
+    class Meta:
+        model = models.Board
+        fields = ['id', 'name', 'access', 'img']
 
 class UserBoardSerializer(serializers.ModelSerializer):
-    board = BoardSerialuzer()
+    board = BoardSerializer()
     class Meta:
         model = models.UserRightBoard
         fields = ['user', 'board']
@@ -26,14 +31,13 @@ class PinsDetailSerializer(serializers.ModelSerializer):
     user = user_ser.UserForPin()
     class Meta:
         model = models.Pin
-        fields = ['id', 'name', 'description', 'image', 'upload_date', 'category', 'user']
+        fields = ['id', 'name', 'description', 'image', 'upload_date', 'user']
         depth = 1
-
 class GetPinsOnBoardSerializer(serializers.ModelSerializer):
-    pin = PinsDetailSerializer()
+    pin = PinsSerializer()
     class Meta:
         model = models.BoardPin
-        fields = ['pin',]
+        fields = ['board','pin']
 
 class AddPinToBoardSerializer(serializers.ModelSerializer):
     class Meta:
