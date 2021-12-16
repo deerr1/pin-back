@@ -62,8 +62,7 @@ class CreateUpdateDeleteUserBoard(APIView):
         data = request.data
         serializer = serializers.BoadCreateSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
-            access = models.AccessToBoard.objects.get(id=data.get('access'))
-            board = models.Board.objects.create(name=data.get('name'), access=access)
+            board = models.Board.objects.create(name=data.get('name'), access=data.get('access'))
             rightsBoard = models.UserRightBoard.objects.create(user=request.user, board = board)
             rightsBoard.save()
             return Response(status=201)

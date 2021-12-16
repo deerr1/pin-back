@@ -3,24 +3,13 @@ from django.conf import settings
 from random import randint
 
 
-class AccessToBoard(models.Model):
+class Board(models.Model):
     ACCESS_STATUS = (
         (0, 'Открытая'),
         (1, 'Закрытая')
     )
-
-    name = models.IntegerField(verbose_name='Название права', choices=ACCESS_STATUS, blank=True, default=0)
-
-    class Meta:
-        verbose_name = 'Права доступа'
-        verbose_name_plural = 'Права доступа'
-
-    def __str__(self):
-        return f"{ f'Закрытая {self.name}' if self.name else f'Открытая  {self.name}'}"
-
-class Board(models.Model):
     name = models.CharField(verbose_name='Название доски', max_length=50)
-    access = models.ForeignKey(to=AccessToBoard, on_delete=models.DO_NOTHING)
+    access = models.IntegerField(verbose_name='Право', choices=ACCESS_STATUS, blank=True, default=0)
     user_righs_board = models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='UserRightBoard')
 
     def __str__(self):
@@ -60,7 +49,7 @@ class Pin(models.Model):
     description = models.TextField(verbose_name='Описание',null=True, blank=True)
     image = models.FileField(verbose_name='Изображение', upload_to="images", editable=True)
     upload_date = models.DateTimeField(verbose_name='Дата загрузки пина')
-    category = models.ManyToManyField(to=PinCategory, verbose_name='Категория', null=True, blank=True)
+    category = models.ManyToManyField(to=PinCategory, verbose_name='Категория')
     board = models.ManyToManyField(to=Board, through='BoardPin')
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
 
