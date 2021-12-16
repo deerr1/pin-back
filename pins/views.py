@@ -92,7 +92,7 @@ class UserBoardDetail(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = models.Board.objects.filter(id = self.kwargs.get('id'))
-        permission = queryset.filter(access__name = 1)
+        permission = queryset.filter(access = 1)
         if len(permission) > 0:
             permission = models.UserRightBoard.objects.filter(board = self.kwargs.get('id'), user=self.request.user.id)
             if len(permission) > 0:
