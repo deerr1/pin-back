@@ -19,7 +19,7 @@ class Board(models.Model):
         ret = None
         queryset = Pin.objects.all().filter(board=self.id)
         count = queryset.values_list('id')
-        if(len(count)-1>0):
+        if(len(count)>0):
             queryset = queryset.filter(id = count[randint(0, len(count) - 1)][0]).first()
             ret = queryset.image
         return ret
