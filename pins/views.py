@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics
 from django.conf import settings
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from random import randint
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +11,7 @@ from django.utils import timezone
 
 import pins.serializers as serializers
 import pins.models as models
+import users.models as user_models
 import datetime
 
 
@@ -41,7 +42,6 @@ class CreatePin(APIView):
         pin['user'] = request.user
         serializer = serializers.PinCreateSerializer(data=pin)
         if serializer.is_valid(raise_exception=True):
-            print(pin['upload_date'])
             board = models.Board.objects.get(id=request.data['board'])
             pin = models.Pin.objects.create(name=pin['name'], image=pin['image'], description=pin['description'], upload_date=pin['upload_date'], user=pin['user'])
             pinBoard = models.BoardPin.objects.create(pin = pin, board = board)
@@ -87,7 +87,11 @@ class ListUserBoards(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = models.UserRightBoard.objects.filter(user = self.request.user.id)
+        user = user_models.CustomUser.objects.get(username=self.kwargs.get('user'))
+        if user == self.request.user:
+            queryset = models.UserRightBoard.objects.filter(user = user)
+        else:
+            queryset = models.UserRightBoard.objects.filter(user=user, board__access=0)
         if (len(queryset) == 0):
             raise NotFound()
         return queryset
@@ -108,19 +112,27 @@ class UserBoardDetail(generics.ListAPIView):
         else:
             return queryset
 
-class PinDetail(generics.ListAPIView):
+class PinDetail(APIView):
     serializer_class = serializers.PinsDetailSerializer
+    permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        if self.request.user.is_authenticated:
-            queryset = models.Pin.objects.filter(id = self.kwargs.get('id'))
-            filtered_queryset = queryset.filter(board__access = 1, board__user_righs_board = self.request.user.id)
+    def get(self, request, *args, **kwargs):
+        is_you = False
+        if request.user.is_authenticated:
+            queryset = models.Pin.objects.filter(id = kwargs.get('id'))
+            filtered_queryset = queryset.filter(board__access = 1, board__user_righs_board = request.user.id)
             if len(filtered_queryset) == 1:
                 queryset = filtered_queryset
+                is_you = True
             else:
                 queryset = queryset.filter(board__access = 0)
         else:
-            queryset = models.Pin.objects.filter(id = self.kwargs.get('id'), board__access = 0)
+            queryset = models.Pin.objects.filter(id = kwargs.get('id'), board__access = 0)
         if len(queryset) == 0:
             raise NotFound()
-        return queryset
+        serializer = self.serializer_class(queryset, many=True)
+        data = serializer.data[0]
+        data['isYou'] = is_you
+        data['image'] = 'http://'+request.get_host()+data['image']
+        print(data['image'])
+        return Response(data=data)
