@@ -173,8 +173,11 @@ class PinDetail(APIView):
         serializer = self.serializer_class(queryset, many=True)
         data = serializer.data[0]
         data['isYou'] = is_you
-        data['image'] = 'http://'+request.get_host()+data['image']
-        print(data['isYou'])
+        if data['image'] != None:
+            data['image'] = 'http://'+request.get_host()+data['image']
+        if data['user']['avatar'] != None:
+            data['user']['avatar'] = 'http://'+request.get_host()+data['user']['avatar']
+        print(data['user'])
         return Response(data=data)
 
     def put(self, request, *args, **kwargs):
