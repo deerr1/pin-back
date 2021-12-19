@@ -36,7 +36,7 @@ class PinsDetailSerializer(serializers.ModelSerializer):
     user = user_ser.UserForPin()
     class Meta:
         model = models.Pin
-        fields = ['id', 'name', 'description', 'image', 'upload_date', 'user']
+        fields = ['id', 'name', 'description', 'image', 'upload_date', 'user', 'board']
         depth = 1
 class GetPinsOnBoardSerializer(serializers.ModelSerializer):
     pin = PinsSerializer()

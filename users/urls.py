@@ -5,5 +5,6 @@ import users.views as views
 
 urlpatterns = [
     path('user/', views.GetUser.as_view()),
+    path('user-change/', views.ChangeProfile.as_view()),
     path('user-profile/<str:user>', views.ListProfile.as_view()),
 ]

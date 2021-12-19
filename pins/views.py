@@ -49,6 +49,12 @@ class CreatePin(APIView):
             return Response(status=201)
         return Response(status=400)
 
+    def put():
+        pass
+
+    def delete():
+        pass
+
 class ListPins(generics.ListAPIView):
     serializer_class = serializers.PinsSerializer
 
@@ -74,11 +80,19 @@ class CreateUpdateDeleteUserBoard(APIView):
             return Response(status=201)
         return Response(status=400)
 
-    def put(self):
-        pass
-    
-    def delete(self):
-        pass
+    def put(self, request, *args, **kwargs):
+        data = request.data
+        board = models.Board.objects.get(id = kwargs.get('id'))
+        board.name = data['name']
+        board.access = data['access']
+        board.save()
+        return Response(status=200)
+
+    def delete(self, request, *args, **kwargs):
+        board = models.Board.objects.get(id = kwargs.get('id'))
+        board.delete()
+        return Response(status=200)
+
 
 
 
@@ -96,6 +110,7 @@ class ListUserBoards(generics.ListAPIView):
             raise NotFound()
         return queryset
 
+
 class UserBoardDetail(generics.ListAPIView):
     serializer_class = serializers.BoardSerializer
     permission_classes = [IsAuthenticated]
@@ -112,6 +127,30 @@ class UserBoardDetail(generics.ListAPIView):
         else:
             return queryset
 
+class UserBoardDetail2(APIView):
+    serializer_class = serializers.BoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        is_you = False
+        queryset = models.Board.objects.filter(id = kwargs.get('id'))
+        permission = queryset.filter(access = 1)
+        if len(permission) > 0:
+            permission = models.UserRightBoard.objects.filter(board = kwargs.get('id'), user=request.user.id)
+            if len(permission) > 0:
+                is_you = True
+            else:
+                raise NotFound()
+        else:
+            permission = models.UserRightBoard.objects.filter(board = kwargs.get('id'), user=request.user.id)
+            if len(permission) > 0:
+                is_you = True
+        serializer = self.serializer_class(queryset[0])
+        data = serializer.data
+        data['isYou'] = is_you
+        print(data)
+        return Response(data=data)
+
 class PinDetail(APIView):
     serializer_class = serializers.PinsDetailSerializer
     permission_classes = [AllowAny]
@@ -120,19 +159,40 @@ class PinDetail(APIView):
         is_you = False
         if request.user.is_authenticated:
             queryset = models.Pin.objects.filter(id = kwargs.get('id'))
-            filtered_queryset = queryset.filter(board__access = 1, board__user_righs_board = request.user.id)
-            if len(filtered_queryset) == 1:
+            filtered_queryset = queryset.filter(user = request.user, board__user_righs_board__username = request.user.username)
+            print(filtered_queryset)
+            if len(filtered_queryset) > 0:
                 queryset = filtered_queryset
                 is_you = True
             else:
                 queryset = queryset.filter(board__access = 0)
         else:
             queryset = models.Pin.objects.filter(id = kwargs.get('id'), board__access = 0)
-        if len(queryset) == 0:
-            raise NotFound()
+            if len(queryset) == 0:
+                raise NotFound()
         serializer = self.serializer_class(queryset, many=True)
         data = serializer.data[0]
         data['isYou'] = is_you
         data['image'] = 'http://'+request.get_host()+data['image']
-        print(data['image'])
+        print(data['isYou'])
         return Response(data=data)
+
+    def put(self, request, *args, **kwargs):
+        data = request.data
+        pin = models.Pin.objects.get(id=data['pin_id'])
+        pin.name = data['name']
+        pin.description = data['description']
+        pin.save()
+        if data['old_board_id'] != data['new_board_id']:
+            boardPin = models.BoardPin.objects.filter(board_id=data['old_board_id'], pin_id=pin.id).first()
+            boardPin.delete()
+            board = models.Board.objects.get(id = data['new_board_id'])
+            new_board_pin = models.BoardPin(pin = pin, board = board)
+            new_board_pin.save()
+
+        return Response(status=200)
+
+    def delete(self, request, *args, **kwargs):
+        pin_on_board = models.BoardPin.objects.filter(pin=kwargs.get('id'), board = kwargs.get('board')).first()
+        pin_on_board.delete()
+        return Response(status=204)
