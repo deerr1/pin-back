@@ -21,7 +21,8 @@ class ListProfile(APIView):
                 data['isYou'] = True
             else:
                 data['isYou'] = False
-            data['avatar'] = 'http://'+request.get_host()+data['avatar']
+            if data['avatar'] != None:
+                data['avatar'] = 'http://'+request.get_host()+data['avatar']
             print(data)
             return Response(data=data)
 
@@ -65,5 +66,6 @@ class GetUser(APIView):
         serializer = serializers.UserForProfile(request.user)
         print(serializer.data)
         data = serializer.data.copy()
-        data['avatar'] = 'http://'+request.get_host()+data['avatar']
+        if data['avatar'] != None:
+            data['avatar'] = 'http://'+request.get_host()+data['avatar']
         return Response(data=data)
