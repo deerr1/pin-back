@@ -21,4 +21,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
     path('pins/', include('pins.urls')),
     path('users/', include('users.urls')),
+    path('search_indexes/', include('search_indexes.urls')),
 ]
