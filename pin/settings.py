@@ -104,7 +104,7 @@ DJOSER = {
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'elastick'
+        'hosts': 'localhost:9200'
     },
 }
 
