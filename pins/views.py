@@ -46,6 +46,7 @@ class CreatePin(APIView):
             pin = models.Pin.objects.create(name=pin['name'], image=pin['image'], description=pin['description'], upload_date=pin['upload_date'], user=pin['user'])
             pinBoard = models.BoardPin.objects.create(pin = pin, board = board)
             pinBoard.save()
+            pin.save()
             return Response(status=201)
         return Response(status=400)
 
@@ -64,6 +65,8 @@ class ListPins(generics.ListAPIView):
             queryset = models.Pin.objects.filter(board__access = 0).distinct()
         else:
             queryset = models.Pin.objects.filter(board__access = 0).distinct()
+        
+        print(queryset)
 
         return queryset
 
@@ -198,4 +201,7 @@ class PinDetail(APIView):
     def delete(self, request, *args, **kwargs):
         pin_on_board = models.BoardPin.objects.filter(pin=kwargs.get('id'), board = kwargs.get('board')).first()
         pin_on_board.delete()
+        pin = models.Pin.objects.get(id=kwargs.get('id'))
+        if len(pin.board.all()) == 0:
+            pin.delete()
         return Response(status=204)

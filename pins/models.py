@@ -67,6 +67,8 @@ class Pin(models.Model):
 
     @property
     def board_indexing(self):
+        if len(self.board.all()) == 0:
+            return [BoardPin.objects.get(pin=self).board.access]
         if self.board is not None:
             return [boa.access for boa in self.board.all()]
 
