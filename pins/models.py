@@ -60,6 +60,16 @@ class Pin(models.Model):
     def __str__(self):
         return f"{self.name} {self.category}"
 
+    @property
+    def user_indexing(self):
+        if self.user is not None:
+            return f"{self.user.username}"
+
+    @property
+    def board_indexing(self):
+        if self.board is not None:
+            return [boa.access for boa in self.board.all()]
+
 class BoardPin(models.Model):
     pin = models.ForeignKey(to=Pin, verbose_name='Картинка', on_delete=models.CASCADE)
     board = models.ForeignKey(to=Board,verbose_name='Доска', on_delete=models.CASCADE)

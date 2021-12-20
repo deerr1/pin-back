@@ -45,9 +45,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'drf_yasg',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
     'api',
     'users',
-    'pins'
+    'pins',
+    'search_indexes'
 ]
 
 MIDDLEWARE = [
@@ -99,6 +102,16 @@ DJOSER = {
 
 }
 
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+}
+
+ELASTICSEARCH_INDEX_NAMES = {
+    'search_indexes.documents.pin': 'pin',
+}
+
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Basic': {
@@ -124,8 +137,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'pin',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
+        'PASSWORD': '0102030405f',
+        'HOST': 'localhost',
         "PORT": '5432'
     }
 }
